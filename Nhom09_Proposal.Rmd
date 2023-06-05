@@ -1,0 +1,169 @@
+---
+title: "Phân tích dữ liệu top 1000 streamer trên nền tảng Twitch."
+author: "Nhóm 9"
+output: html_document
+date: "2022-10-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Đề xuất
+
+- Tên đề tài : Phân tích dữ liệu top 1000 streamer trên nền tảng Twitch.
+
+## Ý tưởng
+Trong thời đại công nghệ 4.0, có rất nhiều ngành mới được ra đời trong đó có ngành streamer. Streamer là những người phát sóng trực tiếp khi họ chơi trò chơi điện tử, trò chuyện, hát, ….Ngành streamer khá linh hoạt về thời gian làm việc, công cụ làm việc khá đơn giản chỉ laptop hoặc điện thoại, cùng với mức lương cao làm cho ngành này trở nên khá “hot” đối với các bạn trẻ. Việc thu nhập ngành này liên quan rất nhiều đến lượt view, việc donate của các viewer. Vì vậy với nội dung đa dạng muốn thu hút nhiều lượt xem đòi hỏi phải có một nền tảng livestream ra đời. Nền tảng livesteam là nơi mà các streamer hoạt động trong một cộng đồng. Nhờ có nền tảng livestream thì streamer thu hút được nhiều người xem hơn, đồng thời làm tăng việc thu nhập của họ . Một trong những nền tảng livestream lớn nhất hiện tại là Twitch. Twitch là nơi tập hợp nhiều streamer nổi tiếng của thế giới. Đối với một kênh streamer thì lượng người theo dõi rất quan trọng. Vậy chúng ta cùng nhau dự đoán lượng người theo dõi của 1 kênh đạt được sau 1 năm là bao nhiêu và phân tích mối quan hệ giữa lượng người theo dõi với các yếu tố còn lại khác của 1 kênh stream điển hình.
+
+## Bài toán và câu hỏi :
+- Dự đoán lượng người theo dõi đạt được sau 1 năm dựa vào thời gian xem của người xem, thời gian streamer phát trực tiếp, Lượt xem cao nhất, Lượt xem trung bình, Lượng người theo dõi và lượt xem đạt được trong 1 năm ?
+- Lượng người theo dõi có ảnh hưởng đến lượt xem hay không ?
+- Thời gian stream có ảnh hưởng đến lượng người theo dõi một của 1 kênh hay không ?
+- Độ tuổi của người xem có ảnh hưởng đến lượt xem không ?
+
+## Dữ liệu nhóm sử dụng :
+- Nguồn tải : 
+  https://www.kaggle.com/datasets/aayushmishra1512/twitchdata
+- Nguồn thu thập :
+  https://www.twitch.tv/
+- Cách thu thập :
+
+  -- Khảo sát các kênh trên nền tảng Twitch
+
+## Mô tả dữ liệu :
+
+- Dữ liệu gồm 11 cột, 1000 dòng.
+- Mô tả biến :
+
+  -- Channel : Tên kênh của streamer
+  
+  -- Watch time (minutes): Thời gian xem của viewers cho streamer
+  
+  -- Stream time (minutes): Thời gian streamer phát trực tiếp
+  
+  -- Peak viewers : Lượt xem cao nhất của kênh
+  
+  -- Average viewers : Lượt xem trung bình của kênh
+  
+  -- Followers : Số người theo dõi kênh 
+  
+  -- Followers gained: Số người theo dõi kênh đạt được sau 1 năm
+  
+  -- Views gained: Số lượt xem đã đạt được sau 1 năm
+  
+  -- Partnered : Hợp tác với Twitch
+  
+  -- Mature : Độ tuổi người xem kênh
+  
+  -- Language : Ngôn ngữ mà streamer sử dụng khi stream
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+data <- read.csv("twitchdata-update.csv")
+
+```
+
+Có bao nhiêu quan sát và bao nhiêu biến trong tập dữ liệu? 
+```{r}
+glimpse(data)
+```
+
+Những kênh ở đầu bảng ?
+
+```{r}
+head(data)
+
+```
+
+Những kênh ở cuối bảng  ?
+```{r}
+tail(data)
+
+```
+
+## Biểu đồ 
+
+Biểu đồ thể hiện số streamer sử dụng ngôn ngữ.
+
+```{r,fig.cap="Phân loại theo ngôn ngữ"}
+ggplot(data,aes(x=Language))+
+    geom_bar()+
+    coord_flip()
+```
+
+```{r,fig.cap="Phân loại trên dưới 18 tuổi"}
+ggplot(data,aes(x=Mature,fill = Mature))+
+    geom_bar()
+```
+
+```{r,fig.cap="Phân loại theo hợp tác với Twitch"}
+ggplot(data,aes(x=Partnered,fill = Partnered))+
+    geom_bar()
+```
+
+```{r,fig.cap="Biểu đồ theo số lượng người theo dõi có được trong năm"}
+ggplot(data,aes(x=Stream.time.minutes.,y=Followers.gained))+
+    geom_line()
+```
+
+```{r,fig.cap="Biều đồ theo số người xem trung bình"}
+ggplot(data)+
+    geom_line(aes(x=Stream.time.minutes.,y=Average.viewers))
+```
+
+```{r,fig.cap="Biểu đồ giữa độ trưởng thành và lượng người theo dõi"}
+ggplot(data,aes(y=Followers,x=Mature))+ 
+    scale_y_log10()+
+    geom_boxplot()
+```
+
+## Phương pháp nhóm dự định dùng :
+-- Chúng ta áp dụng phương pháp quan sát để tiến hành thu thập dữ liệu vì chúng ta chỉ quan sát và ghi lại tình trạng của các đặc điểm / đặc tính và sự kiện xảy ra trong nghiên cứu, và không ảnh hưởng đến đối tượng nghiên cứu.
+-- sau khi thu thập và xử lí dữ liệu, tiến hành áp dụng phương pháp LinearRegression( hồi quy tuyến tính) để giải quyết các câu hỏi đặt ra
+
+## Kế hoạch phân tích dữ liệu
+
+- Các biến có liên quan:
+
+   -- Biến phản hồi : Followers ,Average viewers.
+   
+   -- Biến giải thích : Stream time (minutes), Mature, Followers, Average viewers, Watch time, Peak Viewers, Viewers Gained.
+- Làm sạch dữ liệu: 
+
+   -- Trước khi phân tích, để đảm bảo tính đúng đắn và nhất quán của dữ liệu, chúng ta cần kiểm tra và loại trừ các hàng dữ liệu sai thiếu ... Vì không có hàng trống (Null) nên dữ liệu thu thập được cung cấp cho nhóm là chính xác và đã được làm sạch, chúng ta tạm thời bỏ qua bước này .
+
+## Kế hoạch thực hiện :
+- Thanh Bình :
+
+  -- Đóng góp ý tưởng và nêu câu hỏi EDA cho phần đề xuất
+  
+  -- Vẽ một số biểu đồ EDA và phân tích cho câu hỏi EDA1
+  
+  -- Tham gia thảo luận và trình bày ý kiến thực hiện phần modeling
+  
+- Quốc Trung :
+
+  -- Đóng góp ý tưởng và nêu câu hỏi EDA cho phần đề xuất
+  
+  -- Vẽ một số biểu đồ EDA và phân tích cho câu hỏi 
+  
+  -- Tham gia thảo luận và trình bày ý kiến thực hiện phần modeling
+  
+- Nhật Triều :
+
+  -- Đóng góp ý tưởng và nêu câu hỏi EDA cho phần đề xuất
+  
+  -- Hoàn thiện bài đề xuất và bài báo cáo
+  
+  -- Tổng hợp ý kiến các thành viên và hoàn thiện phần modeling
+  
+- Mai Trung :
+
+  -- Đóng góp ý tưởng và nêu câu hỏi EDA cho phần đề xuất
+  
+  -- Vẽ một số biểu đồ EDA và phân tích cho câu hỏi EDA3
+  
+  -- Tham gia thảo luận và trình bày ý kiến thực hiện phần modeling
